@@ -33,12 +33,12 @@ public class TransactionService {
         transactionRepository.deleteById(id);
     }
 
-    public Transaction updateTransaction(Long id, Transaction updatedTransaction) {
-        Transaction transaction = findById(id);
-        transaction.setAmount(updatedTransaction.getAmount());
-        transaction.setTransactionDate(updatedTransaction.getTransactionDate());
-        transaction.setBooking(updatedTransaction.getBooking());
-        transaction.setStatus(updatedTransaction.getStatus());
-        return transactionRepository.save(transaction);
-    }
+//    public Transaction updateTransaction(Long id, Transaction updatedTransaction) {
+//        Transaction transaction = findById(id);
+//        transaction.setAmount(updatedTransaction.getAmount());
+//        transaction.setTransactionDate(updatedTransaction.getTransactionDate());
+//        transaction.setBooking(updatedTransaction.getBooking());
+//        transaction.setStatus(updatedTransaction.getStatus());
+//        return transactionRepository.save(transaction);
+//    }
 }

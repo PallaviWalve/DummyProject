@@ -9,6 +9,7 @@ import com.example.realestate.service.TransactionService;
 
 import java.util.List;
 
+@CrossOrigin("*")
 @RestController
 @RequestMapping("/api/transactions")
 public class TransactionController {
@@ -34,11 +35,11 @@ public class TransactionController {
         return ResponseEntity.ok(transactions);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Transaction> updateTransaction(@PathVariable Long id, @RequestBody Transaction updatedTransaction) {
-        Transaction transaction = transactionService.updateTransaction(id, updatedTransaction);
-        return ResponseEntity.ok(transaction);
-    }
+//    @PutMapping("/{id}")
+//    public ResponseEntity<Transaction> updateTransaction(@PathVariable Long id, @RequestBody Transaction updatedTransaction) {
+//        Transaction transaction = transactionService.updateTransaction(id, updatedTransaction);
+//        return ResponseEntity.ok(transaction);
+//    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTransaction(@PathVariable Long id) {

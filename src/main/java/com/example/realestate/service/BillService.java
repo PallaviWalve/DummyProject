@@ -9,7 +9,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
 import com.example.realestate.entity.Bill;
 import com.example.realestate.entity.Bill.BillStatus;
 import com.example.realestate.entity.Booking;
@@ -38,13 +37,13 @@ import jakarta.mail.util.ByteArrayDataSource;
 public class BillService {
 
 	@Autowired
-	private BillRepository billRepoRef;
+	private BillRepository billRepository;
 
 	@Autowired
-	private UserService userServiceRef;
+	private UserService userService;
 
 	@Autowired
-	private BookingService bookingServiceRef;
+	private BookingService bookingService;
 
 	@Autowired
 	private JavaMailSender mailSender;
@@ -53,14 +52,14 @@ public class BillService {
 	// private PgService pgServiceRef;
  
 	public Bill getBillById(Long billId) {
-		return billRepoRef.findById(billId)
+		return billRepository.findById(billId)
 				.orElseThrow(() -> new CustomException("Bill not found of  BillId:" + billId));
 	}
 
-	public List<Bill> getBillByUserId(Long userId) {
-		List<Bill> bills = billRepoRef.findByUserRefUserId(userId);
+	public List<Bill> getBillByUserId(Long id) {
+		List<Bill> bills = billRepository.findByUserRefUserId(id);
 		if (bills.isEmpty()) {
-			throw new CustomException("No bill available of UserId:" + userId);
+			throw new CustomException("No bill available of UserId:" + id);
 		} else {
 			return bills;
 		}
@@ -71,7 +70,7 @@ public class BillService {
 	public String deleteBillbyBillId(Long billId) {
 		Bill billRef = getBillById(billId);
 		if (billRef != null) {
-			billRepoRef.deleteById(billId);
+			billRepository.deleteById(billId);
 			return "bill deleted successfully";
 		} else {
 			throw new CustomException("No bill available bill id " + billId);
@@ -80,7 +79,7 @@ public class BillService {
 
 	@Scheduled(cron = "0 23 10 11 * ?")
 	public void generateMonthlyBillsForAllUsers() throws Exception {
-		List<User> users = userServiceRef.GetAllUsersByRole("user");
+		List<User> users = userService.GetAllUsersByRole("user");
 		for (User user : users) {
 			generateBillForUser(user);
 		}
@@ -88,13 +87,12 @@ public class BillService {
 
 	public String generateBillForUser(User user) throws Exception {
 
-		List<Booking> bookings = bookingServiceRef.getBookingByUserId(user.getId());
+		List<Booking> bookings = bookingService.getBookingByUserId(user.getId());
 
 		Bill billRef = null;
 		for (Booking booking : bookings) {
 			System.out.println(booking);
-			if ((booking.getBookingStatus() != BookingStatus.CANCELLED
-					&& booking.getBookingStatus() != BookingStatus.CHECKEDOUT)) {
+			if ((booking.getBookingStatus() != BookingStatus.CANCELLED)) {
 				LocalDate lastBillingDate = getLastBillingDate(user);
 				LocalDate startDate = (lastBillingDate == null) ? booking.getBookingDate()
 						: lastBillingDate.plusDays(1);
@@ -114,7 +112,7 @@ public class BillService {
 						bill.setBillingPeriodEnd(endDate);
 						bill.setCreatedDate(LocalDate.now());
 						bill.setUserRef(user);
-						billRef = billRepoRef.save(bill);
+						billRef = billRepository.save(bill);
 
 						sendBillNotification(user, bill);
 
@@ -127,7 +125,7 @@ public class BillService {
 	}
 
 	private LocalDate getLastBillingDate(User user) {
-		List<Bill> bills = billRepoRef.findByUserRefUserId(user.getId());
+		List<Bill> bills = billRepository.findByUserRefUserId(user.getId());
 		return bills.stream().filter(bill -> bill.getStatus() == BillStatus.PAID) // Adjust the condition as needed
 				.map(Bill::getBillingPeriodEnd).max(LocalDate::compareTo).orElse(null);
 	}
@@ -160,11 +158,11 @@ public class BillService {
 	public byte[] generatePdf(Bill billRef) throws Exception {
 		User userRef = billRef.getUserRef();
 		Long userId = userRef.getId();
-		List<Booking> bookings = bookingServiceRef.getBookingByUserId(userId);
-		Property pgRef = null;
+		List<Booking> bookings = bookingService.getBookingByUserId(userId);
+		Property property = null;
 
 		if (!bookings.isEmpty()) {
-			pgRef = bookings.get(0).getFlatRef().getProperty(); // Adjust according to your actual data model
+			property = bookings.get(0).getFlatRef().getProperty(); // Adjust according to your actual data model
 		}
 
 		// Create a new PDF document
@@ -198,7 +196,7 @@ public class BillService {
 		headerTextCell.setBorder(Rectangle.NO_BORDER);
 		headerTextCell.setBackgroundColor(goldColor);
 		headerTextCell.setPadding(10);
-		headerTextCell.addElement(new Phrase(pgRef., headerFont));
+		headerTextCell.addElement(new Phrase(property.getName(),headerFont ));
 		headerTextCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
 		headerTextCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
 
@@ -206,31 +204,31 @@ public class BillService {
 		headerTable.addCell(new Paragraph());
 		document.add(headerTable);
 
-		document.add(new Paragraph("PG Details"));
+		document.add(new Paragraph("Property Details"));
 
-		PdfPTable PgTable = new PdfPTable(2);
-		PgTable.setWidthPercentage(80);
-		PgTable.setHorizontalAlignment(Element.ALIGN_LEFT);
-		PgTable.setWidths(new int[] { 2, 4 });
+		PdfPTable PropertyTable = new PdfPTable(2);
+		PropertyTable.setWidthPercentage(80);
+		PropertyTable.setHorizontalAlignment(Element.ALIGN_LEFT);
+		PropertyTable.setWidths(new int[] { 2, 4 });
+		
+		PropertyTable.addCell(createHeaderCell("Property Name:", headerFont, BaseColor.WHITE));
+		PropertyTable.addCell(new Phrase(property.getName(), normalFont));
+		PropertyTable.addCell(createHeaderCell("Owner Name:", headerFont, BaseColor.WHITE));
+		PropertyTable.addCell(new Phrase(property.getBuilder().getName(), normalFont));
+		PropertyTable.addCell(createHeaderCell("Contact No:", headerFont, BaseColor.WHITE));
+		PropertyTable.addCell(new Phrase(property.getCity(), normalFont));
+		PropertyTable.addCell(createHeaderCell("Property Address:", headerFont, BaseColor.WHITE));
+		PropertyTable.addCell(new Phrase(property.getAddress(), normalFont));
 
-		PgTable.addCell(createHeaderCell("PG Name:", headerFont, BaseColor.WHITE));
-		PgTable.addCell(new Phrase(pgRef.getPgName(), normalFont));
-		PgTable.addCell(createHeaderCell("Owner Name:", headerFont, BaseColor.WHITE));
-		PgTable.addCell(new Phrase(pgRef.getOwnerName(), normalFont));
-		PgTable.addCell(createHeaderCell("Contact No:", headerFont, BaseColor.WHITE));
-		PgTable.addCell(new Phrase(pgRef.getContactNo(), normalFont));
-		PgTable.addCell(createHeaderCell("PG Address:", headerFont, BaseColor.WHITE));
-		PgTable.addCell(new Phrase(pgRef.getAddress(), normalFont));
-
-		for (int i = 0; i < PgTable.getRows().size(); i++) {
-			for (PdfPCell cell : PgTable.getRow(i).getCells()) {
+		for (int i = 0; i < PropertyTable.getRows().size(); i++) {
+			for (PdfPCell cell : PropertyTable.getRow(i).getCells()) {
 				if (cell != null) {
 					cell.setBorder(PdfPCell.NO_BORDER);
 				}
 			}
 		}
 
-		document.add(PgTable);
+		document.add(PropertyTable);
 
 		// Empty space after header
 		document.add(new Paragraph(
@@ -248,8 +246,9 @@ public class BillService {
 
 		detailsTable.addCell(createHeaderCell("Name:", headerFont, BaseColor.WHITE));
 		detailsTable.addCell(new Phrase(userRef.getFirstName(), normalFont));
+		detailsTable.addCell(new Phrase(userRef.getLastName(), normalFont));
 		detailsTable.addCell(createHeaderCell("mobile No:", headerFont, BaseColor.WHITE));
-		detailsTable.addCell(new Phrase(userRef.getMobileNo(), normalFont));
+		detailsTable.addCell(new Phrase(userRef.getPhoneNumber(), normalFont));
 		detailsTable.addCell(createHeaderCell("Address:", headerFont, BaseColor.WHITE));
 		detailsTable.addCell(new Phrase(userRef.getAddress(), normalFont));
 		detailsTable.addCell(createHeaderCell("Email:", headerFont, BaseColor.WHITE));
@@ -281,16 +280,15 @@ public class BillService {
 
 		double totalRent = 0;
 		for (Booking booking : bookings) {
-			if (!booking.getBookingStatus().equals(BookingStatus.CANCELLED)
-					&& !booking.getBookingStatus().equals(BookingStatus.CHECKEDOUT)) {
+			if (!booking.getBookingStatus().equals(BookingStatus.CANCELLED)) {
 
-				itemTable.addCell(new Phrase(booking.getRoomRef().getRoomNumber().toString()));
+				itemTable.addCell(new Phrase(booking.getFlatRef().getFlatNumber().toString()));
 				itemTable.addCell(new Phrase(booking.getBookingDate().toString()));
 				itemTable.addCell(new Phrase(billRef.getBillingPeriodEnd().toString()));
-				itemTable.addCell(new Phrase(String.valueOf(booking.getRoomRef().getRent())));
+				itemTable.addCell(new Phrase(String.valueOf(booking.getFlatRef().getPrice())));
 				itemTable.addCell(new Phrase("-"));
-				itemTable.addCell(new Phrase(String.valueOf(booking.getRoomRef().getRent())));
-				totalRent += booking.getRoomRef().getRent();
+				itemTable.addCell(new Phrase(String.valueOf(booking.getFlatRef().getPrice())));
+				totalRent += booking.getFlatRef().getPrice();
 			}
 		}
 

@@ -1,8 +1,9 @@
 package com.example.realestate.entity;
 
 import java.sql.Date;
-import java.time.LocalDateTime;
-
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -11,6 +12,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 
 @Entity
 @Table(name="appointment")
@@ -19,21 +22,27 @@ public class Appointment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDateTime appointmentDate;
+    @Column(name = "appointment_date")
+    @Temporal(TemporalType.DATE)
+    private Date appointmentDate;
+    
     private String status;  // e.g., Pending, Confirmed, Completed, Canceled
 
     private Date scheduledTime;
     
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @Cascade(CascadeType.ALL)
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "agent_id")
+    @JoinColumn(name = "agent")
+    @Cascade(CascadeType.ALL)
     private Agent agent;
 
     @ManyToOne
     @JoinColumn(name = "flat_id")
+    @Cascade(CascadeType.ALL)
     private Flat flat;
 
     @OneToOne(mappedBy = "appointment")
@@ -44,7 +53,7 @@ public class Appointment {
 		// TODO Auto-generated constructor stub
 	}
 
-	public Appointment(Long id, LocalDateTime appointmentDate, String status, Date scheduledTime, User user,
+	public Appointment(Long id, Date appointmentDate, String status, Date scheduledTime, User user,
 			Agent agent, Flat flat, Feedback feedback) {
 		super();
 		this.id = id;
@@ -65,11 +74,11 @@ public class Appointment {
 		this.id = id;
 	}
 
-	public LocalDateTime getAppointmentDate() {
+	public Date getAppointmentDate() {
 		return appointmentDate;
 	}
 
-	public void setAppointmentDate(LocalDateTime appointmentDate) {
+	public void setAppointmentDate(Date appointmentDate) {
 		this.appointmentDate = appointmentDate;
 	}
 

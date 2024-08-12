@@ -9,7 +9,7 @@ import com.example.realestate.exception.CustomException;
 import com.example.realestate.exception.FlatNotFoundExceptions;
 import com.example.realestate.service.FlatService;
 
-
+@CrossOrigin("*")
 @RestController
 @RequestMapping("/api/flats")
 public class FlatController {

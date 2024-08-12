@@ -9,6 +9,7 @@ import com.example.realestate.service.BuilderService;
 
 import java.util.List;
 
+@CrossOrigin("*")
 @RestController
 @RequestMapping("/api/builders")
 public class BuilderController {

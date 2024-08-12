@@ -13,6 +13,7 @@ import com.example.realestate.service.UserService;
 
 import java.util.List;
 
+@CrossOrigin("*")
 @RestController
 @RequestMapping("/api/users")
 public class UserController {

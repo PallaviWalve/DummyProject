@@ -8,7 +8,7 @@ import com.example.realestate.entity.Appointment;
 import com.example.realestate.service.AppointmentService;
 
 import java.util.List;
-
+@CrossOrigin("*")
 @RestController
 @RequestMapping("/api/appointments")
 public class AppointmentController {

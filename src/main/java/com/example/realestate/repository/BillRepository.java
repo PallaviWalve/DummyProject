@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.example.realestate.entity.Bill;
 
 public interface BillRepository extends JpaRepository<Bill, Long> {
-            List<Bill> findByUserRefUserId(Long userId);
+            List<Bill> findByUserRefUserId(Long id);
 }

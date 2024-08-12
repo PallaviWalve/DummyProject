@@ -1,61 +1,56 @@
 package com.example.realestate.entity;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.ManyToOne;
 
 @Entity
-@Table(name="transaction")
 public class Transaction {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    private String transactionId;
-    private double amount;
-    private LocalDateTime transactionDate;
-    private String status;  // e.g., Success, Failed, Pending
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long paymentId;
 
-    @OneToOne
-    @JoinColumn(name = "booking_id")
-    private Booking booking;
+	private double amount;
+
+	@ManyToOne
+	@JoinColumn(name = "userId")
+	private User userRef;
+
+	@ManyToOne
+	@JoinColumn(name = "billId", nullable = false)
+	private Bill billRef;
+
+	@Enumerated(EnumType.STRING)
+	private PaymentStatus paymentStatus;
+
+	public enum PaymentStatus {
+		PENDING, COMPLETED, FAILED
+	}
 
 	public Transaction() {
-		super();
-		// TODO Auto-generated constructor stub
+
 	}
 
-	public Transaction(Long id, String transactionId, double amount, LocalDateTime transactionDate, String status,
-			Booking booking) {
-		super();
-		this.id = id;
-		this.transactionId = transactionId;
+	public Transaction(Long paymentId, double amount, User userRef, Bill billRef, PaymentStatus paymentStatus) {
+		this.paymentId = paymentId;
 		this.amount = amount;
-		this.transactionDate = transactionDate;
-		this.status = status;
-		this.booking = booking;
+		this.userRef = userRef;
+		this.billRef = billRef;
+		this.paymentStatus = paymentStatus;
 	}
 
-	public Long getId() {
-		return id;
+	public Long getPaymentId() {
+		return paymentId;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public String getTransactionId() {
-		return transactionId;
-	}
-
-	public void setTransactionId(String transactionId) {
-		this.transactionId = transactionId;
+	public void setPaymentId(Long paymentId) {
+		this.paymentId = paymentId;
 	}
 
 	public double getAmount() {
@@ -66,36 +61,34 @@ public class Transaction {
 		this.amount = amount;
 	}
 
-	public LocalDateTime getTransactionDate() {
-		return transactionDate;
+	public User getUserRef() {
+		return userRef;
 	}
 
-	public void setTransactionDate(LocalDateTime transactionDate) {
-		this.transactionDate = transactionDate;
+	public void setUserRef(User userRef) {
+		this.userRef = userRef;
 	}
 
-	public String getStatus() {
-		return status;
+	public Bill getBillRef() {
+		return billRef;
 	}
 
-	public void setStatus(String status) {
-		this.status = status;
+	public void setBillRef(Bill billRef) {
+		this.billRef = billRef;
 	}
 
-	public Booking getBooking() {
-		return booking;
+	public PaymentStatus getPaymentStatus() {
+		return paymentStatus;
 	}
 
-	public void setBooking(Booking booking) {
-		this.booking = booking;
+	public void setPaymentStatus(PaymentStatus paymentStatus) {
+		this.paymentStatus = paymentStatus;
 	}
 
 	@Override
 	public String toString() {
-		return "Transaction [id=" + id + ", transactionId=" + transactionId + ", amount=" + amount
-				+ ", transactionDate=" + transactionDate + ", status=" + status + ", booking=" + booking + "]";
+		return "Payment [paymentId=" + paymentId + ", amount=" + amount + ", userRef=" + userRef + ", billRef="
+				+ billRef + ", paymentStatus=" + paymentStatus + "]";
 	}
 
-    
 }
-

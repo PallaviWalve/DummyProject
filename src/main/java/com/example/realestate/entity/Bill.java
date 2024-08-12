@@ -26,9 +26,9 @@ public class Bill {
 	private LocalDate billingPeriodEnd;
 	private LocalDate createdDate;
 	@ManyToOne
-	@JoinColumn(name = "userId")
+	@JoinColumn(name = "id")
 	@Cascade(CascadeType.ALL)
-	private User userRef;
+	private User user;
 	
 	
 	public enum BillStatus {
@@ -47,7 +47,7 @@ public class Bill {
 		this.billingPeriodStart = billingPeriodStart;
 		this.billingPeriodEnd = billingPeriodEnd;
 		this.createdDate = createdDate;
-		this.userRef = userRef;
+		this.user = user;
 	}
 
 	public Long getBillId() {
@@ -99,16 +99,16 @@ public class Bill {
 	}
 
 	public User getUserRef() {
-		return userRef;
+		return user;
 	}
 
 	public void setUserRef(User userRef) {
-		this.userRef = userRef;
+		this.user = userRef;
 	}
 
 	@Override
 	public String toString() {
-		return "Bill [billId=" + billId + ", amount=" + amount + ", status=" + status + ", userRef=" + userRef + "]";
+		return "Bill [billId=" + billId + ", amount=" + amount + ", status=" + status + ", user=" + user + "]";
 	}
 
 }
